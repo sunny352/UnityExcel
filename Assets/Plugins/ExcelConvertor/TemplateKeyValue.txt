@@ -1,0 +1,42 @@
+using System.Collections.Generic;
+using System.IO;
+
+public class {ClassName}Reader
+{
+	public static {ClassName} Lookup({KeyType} key)
+	{
+		if (null == m_data && !Load())
+		{
+			return null;
+		}
+		{ClassName} data = null;
+		m_data.TryGetValue(key, out data);
+		return data;
+	}
+	public static bool Load()
+	{
+		byte[] bytes = TableBytesLoader.Load("{ClassName}");
+		if (null == bytes)
+		{
+			return false;
+		}
+		using (MemoryStream stream = new MemoryStream(bytes))
+		{
+			using (BinaryReader reader = new BinaryReader(stream))
+			{
+				m_data = new Dictionary<{KeyType}, {ClassName}>();
+				int dataCount = reader.ReadInt32();
+				for (int index = 0; index < dataCount; ++index)
+				{
+					{ClassName} tableData = new {ClassName}();
+					{
+						{ReadObject}
+					}
+					m_data.Add(tableData.{KeyPropName}, tableData);
+				}
+			}
+		}
+		return true;
+	}
+	private static Dictionary<{KeyType}, {ClassName}> m_data = null;
+}
