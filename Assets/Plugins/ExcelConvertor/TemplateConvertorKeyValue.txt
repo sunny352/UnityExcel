@@ -1,0 +1,62 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using OfficeOpenXml;
+using System.IO;
+
+public class {ClassName}Convertor
+{
+	private static List<{ClassName}> m_data = new List<{ClassName}>();
+
+	public static bool ReadExcel()
+	{
+		ExcelPackage package = TableExcelLoader.Load("{ClassName}");
+		if (null == package)
+		{
+			return false;
+		}
+		ExcelWorksheet sheet = package.Workbook.Worksheets["{ClassName}"];
+		if (null == sheet)
+		{
+			return false;
+		}
+		{KeyType} defaultKey = new {KeyType}();
+		for (int index = 1; index <= sheet.Dimension.Rows; ++index)
+		{
+			var tableData = new {ClassName}();
+			int innerIndex = 0;
+
+			{ReadExcel}
+
+			if (tableData.{KeyName} == defaultKey)
+			{
+				continue;
+			}
+			var existKey = m_data.Find(innerItem => innerItem.{KeyName} == tableData.{KeyName});
+			if (null != existKey)
+			{
+				Debug.LogWarning(string.Format("Already has the key {0}, replace the old data.", tableData.{KeyName}));
+				m_data.Remove(existKey);
+			}
+
+			m_data.Add(tableData);
+		}
+		return true;
+	}
+
+	public static bool SaveBytes()
+	{
+		using (FileStream bytesFile = File.Create("Assets/Resources/Tables/{ClassName}.bytes"))
+		{
+			using (BinaryWriter writer = new BinaryWriter(bytesFile))
+			{
+				writer.Write(m_data.Count);
+				foreach (var tableData in m_data)
+				{
+					{WriteBytes}
+				}
+			}
+		}
+		return true;
+	}
+}

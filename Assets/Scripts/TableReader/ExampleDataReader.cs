@@ -1,24 +1,17 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 
 public class ExampleDataReader
 {
-	public static ExampleData Lookup(Predicate<ExampleData> condition)
+	public static ExampleData Lookup(int key)
 	{
 		if (null == m_data && !Load())
 		{
 			return null;
 		}
-		return m_data.Find(condition);
-	}
-	public static List<ExampleData> LookupAll(Predicate<ExampleData> condition)
-	{
-		if (null == m_data && !Load())
-		{
-			return null;
-		}
-		return m_data.FindAll(condition);
+		ExampleData data = null;
+		m_data.TryGetValue(key, out data);
+		return data;
 	}
 	public static bool Load()
 	{
@@ -31,7 +24,7 @@ public class ExampleDataReader
 		{
 			using (BinaryReader reader = new BinaryReader(stream))
 			{
-				m_data = new List<ExampleData>();
+				m_data = new Dictionary<int, ExampleData>();
 				int dataCount = reader.ReadInt32();
 				for (int index = 0; index < dataCount; ++index)
 				{
@@ -48,11 +41,11 @@ public class ExampleDataReader
 							tableData.IntList[index_0] = reader.ReadInt32();
 						}
 					}
-					m_data.Add(tableData);
+					m_data.Add(tableData.ID, tableData);
 				}
 			}
 		}
 		return true;
 	}
-	private static List<ExampleData> m_data = null;
+	private static Dictionary<int, ExampleData> m_data = null;
 }
