@@ -34,11 +34,17 @@ public class ExampleDataReader
 						tableData.Name = reader.ReadString();
 						tableData.FloatValue = reader.ReadSingle();
 						tableData.EnumValue = (TestEnum)reader.ReadInt32();
-						int count_IntList_0 = reader.ReadInt32();
-						tableData.IntList = new int[count_IntList_0];
-						for (int index_0 = 0; index_0 < count_IntList_0; ++index_0)
+						int count_FixedList_0 = reader.ReadInt32();
+						tableData.FixedList = new int[count_FixedList_0];
+						for (int index_0 = 0; index_0 < count_FixedList_0; ++index_0)
 						{
-							tableData.IntList[index_0] = reader.ReadInt32();
+							tableData.FixedList[index_0] = reader.ReadInt32();
+						}
+						int count_AutoList_0 = reader.ReadInt32();
+						tableData.AutoList = new int[count_AutoList_0];
+						for (int index_0 = 0; index_0 < count_AutoList_0; ++index_0)
+						{
+							tableData.AutoList[index_0] = reader.ReadInt32();
 						}
 					}
 					m_data.Add(tableData.ID, tableData);

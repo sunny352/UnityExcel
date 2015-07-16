@@ -2,15 +2,12 @@
 using System.Collections;
 using System;
 
-//描述属性与表中数据的对应关系
-public sealed class TablePropAttributes : Attribute
+//这个特性用于修饰类，表示需要预先加载
+public sealed class PreLoadAttributes : Attribute
 {
-	public string CNName { get; set; }
-	public string Desc { get; set; }
-	public TablePropAttributes(string cnName, string desc)
+	public PreLoadAttributes()
 	{
-		CNName = cnName;
-		Desc = desc;
+
 	}
 }
 
@@ -23,11 +20,12 @@ public sealed class KeyPropAttributes : Attribute
 	}
 }
 
-//这个特性用于修饰类，表示需要预先加载
-public sealed class PreLoadAttributes : Attribute
+//专用于修饰数组属性，描述数组固定长度
+public sealed class ArrayLengthAttributes : Attribute
 {
-	public PreLoadAttributes()
+	public int Length { get; private set; }
+	public ArrayLengthAttributes(int length)
 	{
-
+		Length = length;
 	}
 }

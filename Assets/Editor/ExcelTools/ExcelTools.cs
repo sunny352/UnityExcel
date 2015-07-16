@@ -275,7 +275,20 @@ public class ExcelTools
 			else if (propInfo.PropertyType.IsArray)
 			{
 				string countName = string.Format("count_{0}_{1}", propInfo.Name, preTab.Length - 4);
-				csStr += string.Format("{0}int {1} = sheet.Cells[index, innerIndex++].GetValue<int>();\n", preTab, countName);
+				object[] arrayLengthAttr = propInfo.GetCustomAttributes(typeof(ArrayLengthAttributes), true);
+				if (null != arrayLengthAttr && arrayLengthAttr.Length > 0)
+				{
+					foreach (object attr in arrayLengthAttr)
+					{
+						ArrayLengthAttributes realAttr = attr as ArrayLengthAttributes;
+						csStr += string.Format("{0}int {1} = {2};\n", preTab, countName, realAttr.Length.ToString());
+						break;
+					}
+				}
+				else
+				{
+					csStr += string.Format("{0}int {1} = sheet.Cells[index, innerIndex++].GetValue<int>();\n", preTab, countName);
+				}
 				string subTypeName = propInfo.PropertyType.ToString();
 				subTypeName = subTypeName.Substring(0, subTypeName.Length - 2);
 				Type subType = GetTypeByName(subTypeName);

@@ -50,11 +50,17 @@ public class ExampleDataConvertor
 				{
 					Debug.LogException(ex);
 				}
-				int count_IntList_0 = sheet.Cells[index, innerIndex++].GetValue<int>();
-				tableData.IntList = new int[count_IntList_0];
-				for (int index_IntList_0 = 0; index_IntList_0 < count_IntList_0; ++index_IntList_0)
+				int count_FixedList_0 = 5;
+				tableData.FixedList = new int[count_FixedList_0];
+				for (int index_FixedList_0 = 0; index_FixedList_0 < count_FixedList_0; ++index_FixedList_0)
 				{
-					tableData.IntList[index_IntList_0] = sheet.Cells[index, innerIndex++].GetValue<int>();
+					tableData.FixedList[index_FixedList_0] = sheet.Cells[index, innerIndex++].GetValue<int>();
+				}
+				int count_AutoList_0 = sheet.Cells[index, innerIndex++].GetValue<int>();
+				tableData.AutoList = new int[count_AutoList_0];
+				for (int index_AutoList_0 = 0; index_AutoList_0 < count_AutoList_0; ++index_AutoList_0)
+				{
+					tableData.AutoList[index_AutoList_0] = sheet.Cells[index, innerIndex++].GetValue<int>();
 				}
 			}
 			if (tableData.ID == defaultKey)
@@ -86,10 +92,15 @@ public class ExampleDataConvertor
 					writer.Write(tableData.Name);
 					writer.Write(tableData.FloatValue);
 					writer.Write((int)tableData.EnumValue);
-					writer.Write(tableData.IntList.Length);
-					foreach (var obj_IntList_0 in tableData.IntList)
+					writer.Write(tableData.FixedList.Length);
+					foreach (var obj_FixedList_0 in tableData.FixedList)
 					{
-						writer.Write(obj_IntList_0);
+						writer.Write(obj_FixedList_0);
+					}
+					writer.Write(tableData.AutoList.Length);
+					foreach (var obj_AutoList_0 in tableData.AutoList)
+					{
+						writer.Write(obj_AutoList_0);
 					}
 				}
 			}
