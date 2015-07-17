@@ -34,6 +34,17 @@ public class ExcelTools
 		{
 			CreateTableReader(type, preLoadList);
 		}
+		using (StreamWriter writer = File.CreateText(TableReaderFolder + "/TableManager.cs"))
+		{
+			string csStr = "using UnityEngine;\nusing System.Collections;\n\npublic class TableManager\n{\n\tpublic static void LoadTables()\n\t{\n";
+			foreach (Type type in preLoadList)
+			{
+				csStr += string.Format("\t\t{0}Reader.Load();\n", type.ToString());
+			}
+			csStr += "\t}\n}\n";
+			writer.Write(csStr);
+		}
+
 		AssetDatabase.Refresh();
 	}
 	private static void CreateTableReader(Type type, List<Type> preLoadList)
@@ -47,8 +58,7 @@ public class ExcelTools
 		{
 			writer.Write(CreateReaderCS(type));
 		}
-		object[] preloadAttrs = type.GetCustomAttributes(typeof(PreLoadAttributes), true);
-		if (null != preloadAttrs && preloadAttrs.Length > 1)
+		if (type.IsDefined(typeof(PreLoadAttributes), true))
 		{
 			preLoadList.Add(type);
 		}
@@ -59,8 +69,7 @@ public class ExcelTools
 		PropertyInfo keyInfo = null;
 		foreach (var prop in props)
 		{
-			object[] tablePropList = prop.GetCustomAttributes(typeof(KeyPropAttributes), false);
-			if (null != tablePropList && tablePropList.Length > 0)
+			if (prop.IsDefined(typeof(KeyPropAttributes), false))
 			{
 				keyInfo = prop;
 				break;
@@ -208,8 +217,7 @@ public class ExcelTools
 		PropertyInfo keyInfo = null;
 		foreach (var prop in props)
 		{
-			object[] tablePropList = prop.GetCustomAttributes(typeof(KeyPropAttributes), false);
-			if (null != tablePropList && tablePropList.Length > 0)
+			if (prop.IsDefined(typeof(KeyPropAttributes), false))
 			{
 				keyInfo = prop;
 				break;
