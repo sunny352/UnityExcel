@@ -34,41 +34,41 @@ public class ExampleDataReader
 						tableData.Name = reader.ReadString();
 						tableData.FloatValue = reader.ReadSingle();
 						tableData.EnumValue = (TestEnum)reader.ReadInt32();
-						int count_FixedList_0 = reader.ReadInt32();
-						tableData.FixedList = new int[count_FixedList_0];
-						for (int index_FixedList_0 = 0; index_FixedList_0 < count_FixedList_0; ++index_FixedList_0)
+						int count_FixedList_6 = reader.ReadInt32();
+						tableData.FixedList = new int[count_FixedList_6];
+						for (int index_FixedList_6 = 0; index_FixedList_6 < count_FixedList_6; ++index_FixedList_6)
 						{
-							tableData.FixedList[index_FixedList_0] = reader.ReadInt32();
+							tableData.FixedList[index_FixedList_6] = reader.ReadInt32();
 						}
-						int count_AutoList_0 = reader.ReadInt32();
-						tableData.AutoList = new int[count_AutoList_0];
-						for (int index_AutoList_0 = 0; index_AutoList_0 < count_AutoList_0; ++index_AutoList_0)
+						int count_AutoList_6 = reader.ReadInt32();
+						tableData.AutoList = new int[count_AutoList_6];
+						for (int index_AutoList_6 = 0; index_AutoList_6 < count_AutoList_6; ++index_AutoList_6)
 						{
-							tableData.AutoList[index_AutoList_0] = reader.ReadInt32();
+							tableData.AutoList[index_AutoList_6] = reader.ReadInt32();
 						}
-						ExampleInnerData obj_InnerData_0 = new ExampleInnerData();
+						ExampleInnerData obj_InnerData_6 = new ExampleInnerData();
 						{
-							obj_InnerData_0.ID = reader.ReadInt32();
-							int count_AutoList_1 = reader.ReadInt32();
-							obj_InnerData_0.AutoList = new ExampleInnerInnerData[count_AutoList_1];
-							for (int index_AutoList_1 = 0; index_AutoList_1 < count_AutoList_1; ++index_AutoList_1)
+							obj_InnerData_6.ID = reader.ReadInt32();
+							int count_AutoList_7 = reader.ReadInt32();
+							obj_InnerData_6.AutoList = new ExampleInnerInnerData[count_AutoList_7];
+							for (int index_AutoList_7 = 0; index_AutoList_7 < count_AutoList_7; ++index_AutoList_7)
 							{
-								obj_InnerData_0.AutoList[index_AutoList_1].ID = reader.ReadInt32();
-								obj_InnerData_0.AutoList[index_AutoList_1].EnumValue = (TestEnum)reader.ReadInt32();
+								obj_InnerData_6.AutoList[index_AutoList_7].ID = reader.ReadInt32();
+								obj_InnerData_6.AutoList[index_AutoList_7].EnumValue = (TestEnum)reader.ReadInt32();
 							}
 						}
-						tableData.InnerData = obj_InnerData_0;
-						int count_InnerDataList_0 = reader.ReadInt32();
-						tableData.InnerDataList = new ExampleInnerData[count_InnerDataList_0];
-						for (int index_InnerDataList_0 = 0; index_InnerDataList_0 < count_InnerDataList_0; ++index_InnerDataList_0)
+						tableData.InnerData = obj_InnerData_6;
+						int count_InnerDataList_6 = reader.ReadInt32();
+						tableData.InnerDataList = new ExampleInnerData[count_InnerDataList_6];
+						for (int index_InnerDataList_6 = 0; index_InnerDataList_6 < count_InnerDataList_6; ++index_InnerDataList_6)
 						{
-							tableData.InnerDataList[index_InnerDataList_0].ID = reader.ReadInt32();
-							int count_AutoList_1 = reader.ReadInt32();
-							tableData.InnerDataList[index_InnerDataList_0].AutoList = new ExampleInnerInnerData[count_AutoList_1];
-							for (int index_AutoList_1 = 0; index_AutoList_1 < count_AutoList_1; ++index_AutoList_1)
+							tableData.InnerDataList[index_InnerDataList_6].ID = reader.ReadInt32();
+							int count_AutoList_7 = reader.ReadInt32();
+							tableData.InnerDataList[index_InnerDataList_6].AutoList = new ExampleInnerInnerData[count_AutoList_7];
+							for (int index_AutoList_7 = 0; index_AutoList_7 < count_AutoList_7; ++index_AutoList_7)
 							{
-								tableData.InnerDataList[index_InnerDataList_0].AutoList[index_AutoList_1].ID = reader.ReadInt32();
-								tableData.InnerDataList[index_InnerDataList_0].AutoList[index_AutoList_1].EnumValue = (TestEnum)reader.ReadInt32();
+								tableData.InnerDataList[index_InnerDataList_6].AutoList[index_AutoList_7].ID = reader.ReadInt32();
+								tableData.InnerDataList[index_InnerDataList_6].AutoList[index_AutoList_7].EnumValue = (TestEnum)reader.ReadInt32();
 							}
 						}
 					}

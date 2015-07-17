@@ -50,29 +50,29 @@ public class ExampleDataConvertor
 				{
 					Debug.LogException(ex);
 				}
-				int count_FixedList_0 = 5;
-				tableData.FixedList = new int[count_FixedList_0];
-				for (int index_FixedList_0 = 0; index_FixedList_0 < count_FixedList_0; ++index_FixedList_0)
+				int count_FixedList_4 = 5;
+				tableData.FixedList = new int[count_FixedList_4];
+				for (int index_FixedList_4 = 0; index_FixedList_4 < count_FixedList_4; ++index_FixedList_4)
 				{
-					tableData.FixedList[index_FixedList_0] = sheet.Cells[index, innerIndex++].GetValue<int>();
+					tableData.FixedList[index_FixedList_4] = sheet.Cells[index, innerIndex++].GetValue<int>();
 				}
-				int count_AutoList_0 = sheet.Cells[index, innerIndex++].GetValue<int>();
-				tableData.AutoList = new int[count_AutoList_0];
-				for (int index_AutoList_0 = 0; index_AutoList_0 < count_AutoList_0; ++index_AutoList_0)
+				int count_AutoList_4 = sheet.Cells[index, innerIndex++].GetValue<int>();
+				tableData.AutoList = new int[count_AutoList_4];
+				for (int index_AutoList_4 = 0; index_AutoList_4 < count_AutoList_4; ++index_AutoList_4)
 				{
-					tableData.AutoList[index_AutoList_0] = sheet.Cells[index, innerIndex++].GetValue<int>();
+					tableData.AutoList[index_AutoList_4] = sheet.Cells[index, innerIndex++].GetValue<int>();
 				}
-				ExampleInnerData obj_InnerData_0 = new ExampleInnerData();
+				ExampleInnerData obj_InnerData_4 = new ExampleInnerData();
 				{
-					obj_InnerData_0.ID = sheet.Cells[index, innerIndex++].GetValue<int>();
-					int count_AutoList_1 = sheet.Cells[index, innerIndex++].GetValue<int>();
-					obj_InnerData_0.AutoList = new ExampleInnerInnerData[count_AutoList_1];
-					for (int index_AutoList_1 = 0; index_AutoList_1 < count_AutoList_1; ++index_AutoList_1)
+					obj_InnerData_4.ID = sheet.Cells[index, innerIndex++].GetValue<int>();
+					int count_AutoList_5 = sheet.Cells[index, innerIndex++].GetValue<int>();
+					obj_InnerData_4.AutoList = new ExampleInnerInnerData[count_AutoList_5];
+					for (int index_AutoList_5 = 0; index_AutoList_5 < count_AutoList_5; ++index_AutoList_5)
 					{
-						obj_InnerData_0.AutoList[index_AutoList_1].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
+						obj_InnerData_4.AutoList[index_AutoList_5].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
 						try
 						{
-							obj_InnerData_0.AutoList[index_AutoList_1].EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), sheet.Cells[index, innerIndex++].GetValue<string>());
+							obj_InnerData_4.AutoList[index_AutoList_5].EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), sheet.Cells[index, innerIndex++].GetValue<string>());
 						}
 						catch(System.Exception ex)
 						{
@@ -80,20 +80,20 @@ public class ExampleDataConvertor
 						}
 					}
 				}
-				tableData.InnerData = obj_InnerData_0;
-				int count_InnerDataList_0 = sheet.Cells[index, innerIndex++].GetValue<int>();
-				tableData.InnerDataList = new ExampleInnerData[count_InnerDataList_0];
-				for (int index_InnerDataList_0 = 0; index_InnerDataList_0 < count_InnerDataList_0; ++index_InnerDataList_0)
+				tableData.InnerData = obj_InnerData_4;
+				int count_InnerDataList_4 = sheet.Cells[index, innerIndex++].GetValue<int>();
+				tableData.InnerDataList = new ExampleInnerData[count_InnerDataList_4];
+				for (int index_InnerDataList_4 = 0; index_InnerDataList_4 < count_InnerDataList_4; ++index_InnerDataList_4)
 				{
-					tableData.InnerDataList[index_InnerDataList_0].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
-					int count_AutoList_1 = sheet.Cells[index, innerIndex++].GetValue<int>();
-					tableData.InnerDataList[index_InnerDataList_0].AutoList = new ExampleInnerInnerData[count_AutoList_1];
-					for (int index_AutoList_1 = 0; index_AutoList_1 < count_AutoList_1; ++index_AutoList_1)
+					tableData.InnerDataList[index_InnerDataList_4].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
+					int count_AutoList_5 = sheet.Cells[index, innerIndex++].GetValue<int>();
+					tableData.InnerDataList[index_InnerDataList_4].AutoList = new ExampleInnerInnerData[count_AutoList_5];
+					for (int index_AutoList_5 = 0; index_AutoList_5 < count_AutoList_5; ++index_AutoList_5)
 					{
-						tableData.InnerDataList[index_InnerDataList_0].AutoList[index_AutoList_1].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
+						tableData.InnerDataList[index_InnerDataList_4].AutoList[index_AutoList_5].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
 						try
 						{
-							tableData.InnerDataList[index_InnerDataList_0].AutoList[index_AutoList_1].EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), sheet.Cells[index, innerIndex++].GetValue<string>());
+							tableData.InnerDataList[index_InnerDataList_4].AutoList[index_AutoList_5].EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), sheet.Cells[index, innerIndex++].GetValue<string>());
 						}
 						catch(System.Exception ex)
 						{
@@ -132,34 +132,34 @@ public class ExampleDataConvertor
 					writer.Write(tableData.FloatValue);
 					writer.Write((int)tableData.EnumValue);
 					writer.Write(tableData.FixedList.Length);
-					foreach (var obj_FixedList_0 in tableData.FixedList)
+					foreach (var obj_FixedList_5 in tableData.FixedList)
 					{
-						writer.Write(obj_FixedList_0);
+						writer.Write(obj_FixedList_5);
 					}
 					writer.Write(tableData.AutoList.Length);
-					foreach (var obj_AutoList_0 in tableData.AutoList)
+					foreach (var obj_AutoList_5 in tableData.AutoList)
 					{
-						writer.Write(obj_AutoList_0);
+						writer.Write(obj_AutoList_5);
 					}
-					ExampleInnerData obj_InnerData_0 = tableData.InnerData;
+					var obj_InnerData_5 = tableData.InnerData;
 					{
-						writer.Write(obj_InnerData_0.ID);
-						writer.Write(obj_InnerData_0.AutoList.Length);
-						foreach (var obj_AutoList_1 in obj_InnerData_0.AutoList)
+						writer.Write(obj_InnerData_5.ID);
+						writer.Write(obj_InnerData_5.AutoList.Length);
+						foreach (var obj_AutoList_6 in obj_InnerData_5.AutoList)
 						{
-							writer.Write(obj_AutoList_1.ID);
-							writer.Write((int)obj_AutoList_1.EnumValue);
+							writer.Write(obj_AutoList_6.ID);
+							writer.Write((int)obj_AutoList_6.EnumValue);
 						}
 					}
 					writer.Write(tableData.InnerDataList.Length);
-					foreach (var obj_InnerDataList_0 in tableData.InnerDataList)
+					foreach (var obj_InnerDataList_5 in tableData.InnerDataList)
 					{
-						writer.Write(obj_InnerDataList_0.ID);
-						writer.Write(obj_InnerDataList_0.AutoList.Length);
-						foreach (var obj_AutoList_1 in obj_InnerDataList_0.AutoList)
+						writer.Write(obj_InnerDataList_5.ID);
+						writer.Write(obj_InnerDataList_5.AutoList.Length);
+						foreach (var obj_AutoList_6 in obj_InnerDataList_5.AutoList)
 						{
-							writer.Write(obj_AutoList_1.ID);
-							writer.Write((int)obj_AutoList_1.EnumValue);
+							writer.Write(obj_AutoList_6.ID);
+							writer.Write((int)obj_AutoList_6.EnumValue);
 						}
 					}
 				}

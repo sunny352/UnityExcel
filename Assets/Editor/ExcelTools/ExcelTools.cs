@@ -29,17 +29,16 @@ public class ExcelTools
 		AssetDatabase.Refresh();
 		Directory.CreateDirectory(TableReaderFolder);
 
-		List<Type> preLoadList = new List<Type>();
-		foreach (Type type in m_tableTypes)
-		{
-			CreateTableReader(type, preLoadList);
-		}
 		using (StreamWriter writer = File.CreateText(TableReaderFolder + "/TableManager.cs"))
 		{
 			string csStr = "using UnityEngine;\nusing System.Collections;\n\npublic class TableManager\n{\n\tpublic static void LoadTables()\n\t{\n";
-			foreach (Type type in preLoadList)
+			foreach (Type type in m_tableTypes)
 			{
-				csStr += string.Format("\t\t{0}Reader.Load();\n", type.ToString());
+				CreateTableReader(type);
+				if (type.IsDefined(typeof(PreLoadAttributes), true))
+				{
+					csStr += string.Format("\t\t{0}Reader.Load();\n", type.ToString());
+				}
 			}
 			csStr += "\t}\n}\n";
 			writer.Write(csStr);
@@ -47,7 +46,7 @@ public class ExcelTools
 
 		AssetDatabase.Refresh();
 	}
-	private static void CreateTableReader(Type type, List<Type> preLoadList)
+	private static void CreateTableReader(Type type)
 	{
 		if (!type.IsClass)
 		{
@@ -57,10 +56,6 @@ public class ExcelTools
 		using (StreamWriter writer = File.CreateText(TableReaderFolder + "/" + type.ToString() + "Reader.cs"))
 		{
 			writer.Write(CreateReaderCS(type));
-		}
-		if (type.IsDefined(typeof(PreLoadAttributes), true))
-		{
-			preLoadList.Add(type);
 		}
 	}
 	public static string CreateReaderCS(Type type)
@@ -90,82 +85,79 @@ public class ExcelTools
 		csStr = csStr.Replace("{ClassName}", type.ToString());
 		csStr = csStr.Replace("{KeyType}", GetTypeName(keyInfo.PropertyType));
 		csStr = csStr.Replace("{KeyPropName}", keyInfo.Name);
-		csStr = csStr.Replace("{ReadObject}", CreateObjectReaderString(type, string.Empty, string.Empty));
+		csStr = csStr.Replace("{ReadObject}", CreateObjectReaderString(type, "\t\t\t\t\t", "tableData"));
 		return csStr;
 	}
 	public static string CreateListReader(Type type)
 	{
 		string csStr = "using System;\nusing System.Collections.Generic;\nusing System.IO;\n\npublic class {ClassName}Reader\n{\n\tpublic static {ClassName} Lookup(Predicate<{ClassName}> condition)\n\t{\n\t\tif (null == m_data && !Load())\n\t\t{\n\t\t\treturn null;\n\t\t}\n\t\treturn m_data.Find(condition);\n\t}\n\tpublic static List<{ClassName}> LookupAll(Predicate<{ClassName}> condition)\n\t{\n\t\tif (null == m_data && !Load())\n\t\t{\n\t\t\treturn null;\n\t\t}\n\t\treturn m_data.FindAll(condition);\n\t}\n\tpublic static bool Load()\n\t{\n\t\tbyte[] bytes = TableBytesLoader.Load(\"{ClassName}\");\n\t\tif (null == bytes)\n\t\t{\n\t\t\treturn false;\n\t\t}\n\t\tusing (MemoryStream stream = new MemoryStream(bytes))\n\t\t{\n\t\t\tusing (BinaryReader reader = new BinaryReader(stream))\n\t\t\t{\n\t\t\t\tm_data = new List<{ClassName}>();\n\t\t\t\tint dataCount = reader.ReadInt32();\n\t\t\t\tfor (int index = 0; index < dataCount; ++index)\n\t\t\t\t{\n\t\t\t\t\t{ClassName} tableData = new {ClassName}();\n{ReadObject}\t\t\t\t\tm_data.Add(tableData);\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t\treturn true;\n\t}\n\tprivate static List<{ClassName}> m_data = null;\n}\n";
 		csStr = csStr.Replace("{ClassName}", type.ToString());
-		csStr = csStr.Replace("{ReadObject}", CreateObjectReaderString(type, string.Empty, string.Empty));
+		csStr = csStr.Replace("{ReadObject}", CreateObjectReaderString(type, "\t\t\t\t\t", "tableData"));
 		return csStr;
+	}
+	public static string Push(ref string preTab)
+	{
+		string returnStr = string.Format("{0}{{\n", preTab);
+		preTab += "\t";
+		return returnStr;
+	}
+	public static string Pop(ref string preTab)
+	{
+		preTab = preTab.Substring(1);
+		return string.Format("{0}}}\n", preTab);
 	}
 	public static string CreateObjectReaderString(Type type, string preTab, string dataName)
 	{
-		if (null == type)
-		{
-			return string.Empty;
-		}
-		if (string.IsNullOrEmpty(preTab))
-		{
-			preTab = "\t\t\t\t\t";
-		}
-		if (string.IsNullOrEmpty(dataName))
-		{
-			dataName = "tableData";
-		}
-		string csStr = string.Format("{0}{{\n", preTab);
-		preTab += "\t";
+		string csStr = Push(ref preTab);
 
 		PropertyInfo[] propInfoList = type.GetProperties();
 		foreach (var propInfo in propInfoList)
 		{
 			if (propInfo.PropertyType.IsEnum)
 			{
-				csStr += string.Format("{0}{3}.{1} = ({2})reader.ReadInt32();\n", preTab, propInfo.Name, propInfo.PropertyType.ToString(), dataName);
+				csStr += string.Format("{0}{1}.{2} = ({3})reader.ReadInt32();\n", preTab, dataName, propInfo.Name, propInfo.PropertyType.ToString());
 			}
 			else if (propInfo.PropertyType.IsPrimitive)
 			{
 				string typeName = propInfo.PropertyType.ToString();
 				typeName = typeName.Substring("System.".Length);
-				csStr += string.Format("{0}{3}.{1} = reader.Read{2}();\n", preTab, propInfo.Name, typeName, dataName);
+				csStr += string.Format("{0}{1}.{2} = reader.Read{3}();\n", preTab, dataName, propInfo.Name, typeName);
 			}
 			else if (propInfo.PropertyType == typeof(string))
 			{
-				csStr += string.Format("{0}{2}.{1} = reader.ReadString();\n", preTab, propInfo.Name, dataName);
+				csStr += string.Format("{0}{1}.{2} = reader.ReadString();\n", preTab, dataName, propInfo.Name);
 			}
 			else if (propInfo.PropertyType.IsArray)
 			{
-				string countName = string.Format("count_{0}_{1}", propInfo.Name, preTab.Length - 6);
-				csStr += string.Format("{0}int {1} = reader.ReadInt32();\n", preTab, countName);
+				string countName = string.Format("count_{0}_{1}", propInfo.Name, preTab.Length);
+				string indexName = string.Format("index_{0}_{1}", propInfo.Name, preTab.Length);
+				string newDataName = string.Format("{0}.{1}[{2}]", dataName, propInfo.Name, indexName);
+
 				string subTypeName = propInfo.PropertyType.ToString();
 				subTypeName = subTypeName.Substring(0, subTypeName.Length - 2);
 				Type subType = GetTypeByName(subTypeName);
 				if (null != subType)
 				{
-					csStr += string.Format("{0}{4}.{1} = new {2}[{3}];\n", preTab, propInfo.Name, GetTypeName(subType), countName, dataName);
-					string indexName = string.Format("index_{0}_{1}", propInfo.Name, preTab.Length - 6);
-					string newDataName = string.Format("{0}.{1}[{2}]", dataName, propInfo.Name, indexName);
+					csStr += string.Format("{0}int {1} = reader.ReadInt32();\n", preTab, countName);
+					csStr += string.Format("{0}{1}.{2} = new {3}[{4}];\n", preTab, dataName, propInfo.Name, GetTypeName(subType), countName);
 					csStr += string.Format("{0}for (int {1} = 0; {1} < {2}; ++{1})\n", preTab, indexName, countName);
 					if (subType.IsEnum)
 					{
-						csStr += string.Format("{0}{{\n", preTab);
-						csStr += string.Format("{0}{1} = ({2})reader.ReadInt32();\n", preTab + "\t", newDataName, subTypeName);
-						csStr += string.Format("{0}}}\n", preTab);
+						csStr += Push(ref preTab);
+						csStr += string.Format("{0}{1} = ({2})reader.ReadInt32();\n", preTab, newDataName, subTypeName);
+						csStr += Pop(ref preTab);
 					}
 					else if (subType.IsPrimitive)
 					{
-						csStr += string.Format("{0}{{\n", preTab);
-						string typeName = subType.ToString();
-						typeName = typeName.Substring("System.".Length);
-						csStr += string.Format("{0}{1} = reader.Read{2}();\n", preTab + "\t", newDataName, subTypeName.Substring("System.".Length));
-						csStr += string.Format("{0}}}\n", preTab);
+						csStr += Push(ref preTab);
+						csStr += string.Format("{0}{1} = reader.Read{2}();\n", preTab, newDataName, subTypeName.Substring("System.".Length));
+						csStr += Pop(ref preTab);
 					}
 					else if (subType == typeof(string))
 					{
-						csStr += string.Format("{0}{{\n", preTab);
-						csStr += string.Format("{0}{1} = reader.ReadString();\n", preTab + "\t", newDataName);
-						csStr += string.Format("{0}}}\n", preTab);
+						csStr += Push(ref preTab);
+						csStr += string.Format("{0}{1} = reader.ReadString();\n", preTab, newDataName);
+						csStr += Pop(ref preTab);
 					}
 					else
 					{
@@ -175,14 +167,13 @@ public class ExcelTools
 			}
 			else
 			{
-				string objName = string.Format("obj_{0}_{1}", propInfo.Name, preTab.Length - 6);
+				string objName = string.Format("obj_{0}_{1}", propInfo.Name, preTab.Length);
 				csStr += string.Format("{0}{1} {2} = new {1}();\n", preTab, GetTypeName(propInfo.PropertyType), objName);
 				csStr += CreateObjectReaderString(propInfo.PropertyType, preTab, objName);
-				csStr += string.Format("{0}tableData.{1} = {2};\n", preTab, propInfo.Name, objName);
+				csStr += string.Format("{0}{1}.{2} = {3};\n", preTab, dataName, propInfo.Name, objName);
 			}
 		}
-		preTab = preTab.Substring(1);
-		csStr += string.Format("{0}}}\n", preTab);
+		csStr += Pop(ref preTab);
 		return csStr;
 	}
 
@@ -195,11 +186,11 @@ public class ExcelTools
 
 		using (StreamWriter writer = File.CreateText(TableConvertorFolder + "/ConvertorTools.cs"))
 		{
-			string csStr = "using UnityEngine;\nusing System.Collections;\nusing UnityEditor;\nusing System.IO;\n\npublic class ConvertTools\n{\n\t[MenuItem(\"ExcelTools/转换所有表\")]\n\tpublic static void ConvertAll()\n\t{\n\t\tif (!Directory.Exists(\"Assets/Resources/Tables\"))\n\t\t{{\n\t\t\tDirectory.CreateDirectory(\"Assets/Resources/Tables\");\n\t\t}}\n";
+			string csStr = "using UnityEngine;\nusing System.Collections;\nusing UnityEditor;\nusing System.IO;\n\npublic class ConvertTools\n{\n\t[MenuItem(\"ExcelTools/转换所有表\")]\n\tpublic static void ConvertAll()\n\t{\n\t\tif (!Directory.Exists(\"Assets/Resources/Tables\"))\n\t\t{\n\t\t\tDirectory.CreateDirectory(\"Assets/Resources/Tables\");\n\t\t}\n";
 			foreach (Type type in m_tableTypes)
 			{
 				CreateTableConvertor(type);
-				csStr += string.Format("\t\t{0}Convertor.Convert();\n\t\tif (!{0}Reader.Load())\n\t\t{{\n\t\t\tDebug.LogWarning(\"{0} convert fail!\");\n\t\t}}\n", type.ToString());
+				csStr += string.Format("\t\t{0}Convertor.Convert();\n", type.ToString());
 			}
 			csStr += "\t}\n}\n";
 			writer.Write(csStr);
@@ -245,58 +236,54 @@ public class ExcelTools
 		csStr = csStr.Replace("{ClassName}", type.ToString());
 		csStr = csStr.Replace("{KeyType}", GetTypeName(keyInfo.PropertyType));
 		csStr = csStr.Replace("{KeyPropName}", keyInfo.Name);
-		csStr = csStr.Replace("{ReadExcel}", CreateObjrectReadExcel(type, string.Empty, string.Empty));
-		csStr = csStr.Replace("{WriteBytes}", CreateObjrectWriteBytes(type, string.Empty, string.Empty));
+		csStr = csStr.Replace("{ReadExcel}", CreateObjrectReadExcel(type, "\t\t\t", "tableData"));
+		csStr = csStr.Replace("{WriteBytes}", CreateObjrectWriteBytes(type, "\t\t\t\t", "tableData"));
 		return csStr;
 	}
 	public static string CreateListConvertor(Type type)
 	{
 		string csStr = "using UnityEngine;\nusing System;\nusing System.Collections;\nusing System.Collections.Generic;\nusing OfficeOpenXml;\nusing System.IO;\n\npublic class {ClassName}Convertor\n{\n\tprivate static List<{ClassName}> m_data = new List<{ClassName}>();\n\tpublic static bool Convert()\n\t{\n\t\tif (ReadExcel())\n\t\t{\n\t\t\tSaveBytes();\n\t\t\treturn true;\n\t\t}\n\t\telse\n\t\t{\n\t\t\treturn false;\n\t\t}\n\t}\n\n\tprivate static bool ReadExcel()\n\t{\n\t\tExcelPackage package = TableExcelLoader.Load(\"{ClassName}\");\n\t\tif (null == package)\n\t\t{\n\t\t\treturn false;\n\t\t}\n\t\tExcelWorksheet sheet = package.Workbook.Worksheets[\"{ClassName}\"];\n\t\tif (null == sheet)\n\t\t{\n\t\t\treturn false;\n\t\t}\n\t\tfor (int index = 1; index <= sheet.Dimension.Rows; ++index)\n\t\t{\n\t\t\tvar tableData = new {ClassName}();\n\t\t\tint innerIndex = 1;\n{ReadExcel}\t\t\tm_data.Add(tableData);\n\t\t}\n\t\treturn true;\n\t}\n\n\tprivate static bool SaveBytes()\n\t{\n\t\tusing (FileStream bytesFile = File.Create(\"Assets/Resources/Tables/{ClassName}.bytes\"))\n\t\t{\n\t\t\tusing (BinaryWriter writer = new BinaryWriter(bytesFile))\n\t\t\t{\n\t\t\t\twriter.Write(m_data.Count);\n\t\t\t\tforeach (var tableData in m_data)\n{WriteBytes}\t\t\t}\n\t\t}\n\t\treturn true;\n\t}\n}\n";
 		csStr = csStr.Replace("{ClassName}", type.ToString());
-		csStr = csStr.Replace("{ReadExcel}", CreateObjrectReadExcel(type, string.Empty, string.Empty));
-		csStr = csStr.Replace("{WriteBytes}", CreateObjrectWriteBytes(type, string.Empty, string.Empty));
+		csStr = csStr.Replace("{ReadExcel}", CreateObjrectReadExcel(type, "\t\t\t", "tableData"));
+		csStr = csStr.Replace("{WriteBytes}", CreateObjrectWriteBytes(type, "\t\t\t\t", "tableData"));
 		return csStr;
 	}
 	public static string CreateObjrectReadExcel(Type type, string preTab, string dataName)
 	{
-		if (string.IsNullOrEmpty(preTab))
-		{
-			preTab = "\t\t\t";
-		}
-		if (string.IsNullOrEmpty(dataName))
-		{
-			dataName = "tableData";
-		}
-		string csStr = string.Format("{0}{{\n", preTab);
-		preTab += "\t";
+		string csStr = Push(ref preTab);
 
 		PropertyInfo[] propInfoList = type.GetProperties();
 		foreach (var propInfo in propInfoList)
 		{
 			if (propInfo.PropertyType.IsEnum)
 			{
-				csStr += string.Format("{0}try\n{0}{{\n", preTab);
-				csStr += string.Format("{0}{3}.{1} = ({2})Enum.Parse(typeof({2}), sheet.Cells[index, innerIndex++].GetValue<string>());\n", preTab + "\t", propInfo.Name, propInfo.PropertyType.ToString(), dataName);
-				csStr += string.Format("{0}}}\n{0}catch(System.Exception ex)\n{0}{{\n{0}\tDebug.LogException(ex);\n{0}}}\n", preTab);
+				csStr += string.Format("{0}try\n", preTab);
+				csStr += Push(ref preTab);
+				csStr += string.Format("{0}{1}.{2} = ({3})Enum.Parse(typeof({3}), sheet.Cells[index, innerIndex++].GetValue<string>());\n", preTab, dataName, propInfo.Name, propInfo.PropertyType.ToString());
+				csStr += Pop(ref preTab);
+				csStr += string.Format("{0}catch(System.Exception ex)\n{0}{{\n{0}\tDebug.LogException(ex);\n{0}}}\n", preTab);
 			}
 			else if (propInfo.PropertyType.IsPrimitive)
 			{
-				csStr += string.Format("{0}{3}.{1} = sheet.Cells[index, innerIndex++].GetValue<{2}>();\n", preTab, propInfo.Name, GetTypeName(propInfo.PropertyType), dataName);
+				csStr += string.Format("{0}{1}.{2} = sheet.Cells[index, innerIndex++].GetValue<{3}>();\n", preTab, dataName, propInfo.Name, GetTypeName(propInfo.PropertyType));
 			}
 			else if (propInfo.PropertyType == typeof(string))
 			{
-				csStr += string.Format("{0}{2}.{1} = sheet.Cells[index, innerIndex++].GetValue<string>();\n", preTab, propInfo.Name, dataName);
+				csStr += string.Format("{0}{1}.{2} = sheet.Cells[index, innerIndex++].GetValue<string>();\n", preTab, dataName, propInfo.Name);
 			}
 			else if (propInfo.PropertyType.IsArray)
 			{
-				string countName = string.Format("count_{0}_{1}", propInfo.Name, preTab.Length - 4);
+				string countName = string.Format("count_{0}_{1}", propInfo.Name, preTab.Length);
+				string indexName = string.Format("index_{0}_{1}", propInfo.Name, preTab.Length);
+				string newDataName = string.Format("{0}.{1}[{2}]", dataName, propInfo.Name, indexName);
+
 				object[] arrayLengthAttr = propInfo.GetCustomAttributes(typeof(ArrayLengthAttributes), true);
 				if (null != arrayLengthAttr && arrayLengthAttr.Length > 0)
 				{
 					foreach (object attr in arrayLengthAttr)
 					{
 						ArrayLengthAttributes realAttr = attr as ArrayLengthAttributes;
-						csStr += string.Format("{0}int {1} = {2};\n", preTab, countName, realAttr.Length.ToString());
+						csStr += string.Format("{0}int {1} = {2};\n", preTab, countName, realAttr.Length);
 						break;
 					}
 				}
@@ -304,31 +291,33 @@ public class ExcelTools
 				{
 					csStr += string.Format("{0}int {1} = sheet.Cells[index, innerIndex++].GetValue<int>();\n", preTab, countName);
 				}
+
 				string subTypeName = propInfo.PropertyType.ToString();
 				subTypeName = subTypeName.Substring(0, subTypeName.Length - 2);
 				Type subType = GetTypeByName(subTypeName);
 				if (null != subType)
 				{
-					csStr += string.Format("{0}{4}.{1} = new {2}[{3}];\n", preTab, propInfo.Name, GetTypeName(subType), countName, dataName);
-					csStr += string.Format("{0}for (int index_{3}_{1} = 0; index_{3}_{1} < {2}; ++index_{3}_{1})\n", preTab, preTab.Length - 4, countName, propInfo.Name);
-					string newDataName = string.Format("{3}.{0}[index_{2}_{1}]", propInfo.Name, preTab.Length - 4, propInfo.Name, dataName);
+					csStr += string.Format("{0}{1}.{2} = new {3}[{4}];\n", preTab, dataName, propInfo.Name, GetTypeName(subType), countName);
+					csStr += string.Format("{0}for (int {1} = 0; {1} < {2}; ++{1})\n", preTab, indexName, countName);
 					if (subType.IsEnum)
 					{
-						csStr += string.Format("{0}{{\n", preTab);
-						csStr += string.Format("{0}{1} = ({2})Enum.Parse(typeof({2}), sheet.Cells[index, innerIndex++].GetValue<string>());\n", preTab + "\t", newDataName, GetTypeName(subType));
-						csStr += string.Format("{0}}}\n", preTab);
+						csStr += string.Format("{0}try\n", preTab);
+						csStr += Push(ref preTab);
+						csStr += string.Format("{0}{1} = ({2})Enum.Parse(typeof({2}), sheet.Cells[index, innerIndex++].GetValue<string>());\n", preTab, newDataName, GetTypeName(subType));
+						csStr += Pop(ref preTab);
+						csStr += string.Format("{0}catch(System.Exception ex)\n{0}{{\n{0}\tDebug.LogException(ex);\n{0}}}\n", preTab);
 					}
 					else if (subType.IsPrimitive)
 					{
-						csStr += string.Format("{0}{{\n", preTab);
-						csStr += string.Format("{0}{1} = sheet.Cells[index, innerIndex++].GetValue<{2}>();\n", preTab + "\t", newDataName, GetTypeName(subType));
-						csStr += string.Format("{0}}}\n", preTab);
+						csStr += Push(ref preTab);
+						csStr += string.Format("{0}{1} = sheet.Cells[index, innerIndex++].GetValue<{2}>();\n", preTab, newDataName, GetTypeName(subType));
+						csStr += Pop(ref preTab);
 					}
 					else if (subType == typeof(string))
 					{
-						csStr += string.Format("{0}{{\n", preTab);
-						csStr += string.Format("{0}{1} = sheet.Cells[index, innerIndex++].GetValue<string>();\n", preTab + "\t", newDataName);
-						csStr += string.Format("{0}}}\n", preTab);
+						csStr += Push(ref preTab);
+						csStr += string.Format("{0}{1} = sheet.Cells[index, innerIndex++].GetValue<string>();\n", preTab, newDataName);
+						csStr += Pop(ref preTab);
 					}
 					else
 					{
@@ -338,69 +327,59 @@ public class ExcelTools
 			}
 			else
 			{
-				string newDataName = string.Format("obj_{0}_{1}", propInfo.Name, preTab.Length - 4);
+				string newDataName = string.Format("obj_{0}_{1}", propInfo.Name, preTab.Length);
 				csStr += string.Format("{0}{1} {2} = new {1}();\n", preTab, GetTypeName(propInfo.PropertyType), newDataName);
 				csStr += CreateObjrectReadExcel(propInfo.PropertyType, preTab, newDataName);
-				csStr += string.Format("{0}{3}.{1} = {2};\n", preTab, propInfo.Name, newDataName, dataName);
+				csStr += string.Format("{0}{1}.{2} = {3};\n", preTab, dataName, propInfo.Name, newDataName);
 			}
 		}
-		preTab = preTab.Substring(1);
-		csStr += string.Format("{0}}}\n", preTab);
+		csStr += Pop(ref preTab);
 		return csStr;
 	}
 	public static string CreateObjrectWriteBytes(Type type, string preTab, string dataName)
 	{
-		if (string.IsNullOrEmpty(preTab))
-		{
-			preTab = "\t\t\t\t";
-		}
-		if (string.IsNullOrEmpty(dataName))
-		{
-			dataName = "tableData";
-		}
-		string csStr = string.Format("{0}{{\n", preTab);
-		preTab += "\t";
+		string csStr = Push(ref preTab);
 
 		PropertyInfo[] propInfoList = type.GetProperties();
 		foreach (var propInfo in propInfoList)
 		{
 			if (propInfo.PropertyType.IsEnum)
 			{
-				csStr += string.Format("{0}writer.Write((int){2}.{1});\n", preTab, propInfo.Name, dataName);
+				csStr += string.Format("{0}writer.Write((int){1}.{2});\n", preTab, dataName, propInfo.Name);
 			}
 			else if (propInfo.PropertyType.IsPrimitive)
 			{
-				csStr += string.Format("{0}writer.Write({2}.{1});\n", preTab, propInfo.Name, dataName);
+				csStr += string.Format("{0}writer.Write({1}.{2});\n", preTab, dataName, propInfo.Name);
 			}
 			else if (propInfo.PropertyType == typeof(string))
 			{
-				csStr += string.Format("{0}writer.Write({2}.{1});\n", preTab, propInfo.Name, dataName);
+				csStr += string.Format("{0}writer.Write({1}.{2});\n", preTab, dataName, propInfo.Name);
 			}
 			else if (propInfo.PropertyType.IsArray)
 			{
+				string newDataName = string.Format("obj_{0}_{1}", propInfo.Name, preTab.Length);
 				csStr += string.Format("{0}writer.Write({1}.{2}.Length);\n", preTab, dataName, propInfo.Name);
-				string newDataName = string.Format("obj_{0}_{1}", propInfo.Name, preTab.Length - 5);
 				csStr += string.Format("{0}foreach (var {1} in {2}.{3})\n", preTab, newDataName, dataName, propInfo.Name);
 				string subTypeName = propInfo.PropertyType.ToString();
 				subTypeName = subTypeName.Substring(0, subTypeName.Length - 2);
 				Type subType = GetTypeByName(subTypeName);
 				if (subType.IsEnum)
 				{
-					csStr += string.Format("{0}{{\n", preTab);
-					csStr += string.Format("{0}writer.Write((int){1});\n", preTab + "\t", newDataName);
-					csStr += string.Format("{0}}}\n", preTab);
+					csStr += Push(ref preTab);
+					csStr += string.Format("{0}writer.Write((int){1});\n", preTab, newDataName);
+					csStr += Pop(ref preTab);
 				}
 				else if (subType.IsPrimitive)
 				{
-					csStr += string.Format("{0}{{\n", preTab);
-					csStr += string.Format("{0}writer.Write({1});\n", preTab + "\t", newDataName);
-					csStr += string.Format("{0}}}\n", preTab);
+					csStr += Push(ref preTab);
+					csStr += string.Format("{0}writer.Write({1});\n", preTab, newDataName);
+					csStr += Pop(ref preTab);
 				}
 				else if (subType == typeof(string))
 				{
-					csStr += string.Format("{0}{{\n", preTab);
-					csStr += string.Format("{0}writer.Write({1});\n", preTab + "\t", newDataName);
-					csStr += string.Format("{0}}}\n", preTab);
+					csStr += Push(ref preTab);
+					csStr += string.Format("{0}writer.Write({1});\n", preTab, newDataName);
+					csStr += Pop(ref preTab);
 				}
 				else
 				{
@@ -409,13 +388,12 @@ public class ExcelTools
 			}
 			else
 			{
-				string newDataName = string.Format("obj_{0}_{1}", propInfo.Name, preTab.Length - 5);
-				csStr += string.Format("{0}{1} {2} = tableData.{3};\n", preTab, GetTypeName(propInfo.PropertyType), newDataName, propInfo.Name);
+				string newDataName = string.Format("obj_{0}_{1}", propInfo.Name, preTab.Length);
+				csStr += string.Format("{0}var {1} = tableData.{2};\n", preTab, newDataName, propInfo.Name);
 				csStr += CreateObjrectWriteBytes(propInfo.PropertyType, preTab, newDataName);
 			}
 		}
-		preTab = preTab.Substring(1);
-		csStr += string.Format("{0}}}\n", preTab);
+		csStr += Pop(ref preTab);
 		return csStr;
 	}
 
