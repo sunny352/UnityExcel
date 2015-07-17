@@ -62,6 +62,45 @@ public class ExampleDataConvertor
 				{
 					tableData.AutoList[index_AutoList_0] = sheet.Cells[index, innerIndex++].GetValue<int>();
 				}
+				ExampleInnerData obj_InnerData_0 = new ExampleInnerData();
+				{
+					obj_InnerData_0.ID = sheet.Cells[index, innerIndex++].GetValue<int>();
+					int count_AutoList_1 = sheet.Cells[index, innerIndex++].GetValue<int>();
+					obj_InnerData_0.AutoList = new ExampleInnerInnerData[count_AutoList_1];
+					for (int index_AutoList_1 = 0; index_AutoList_1 < count_AutoList_1; ++index_AutoList_1)
+					{
+						obj_InnerData_0.AutoList[index_AutoList_1].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
+						try
+						{
+							obj_InnerData_0.AutoList[index_AutoList_1].EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), sheet.Cells[index, innerIndex++].GetValue<string>());
+						}
+						catch(System.Exception ex)
+						{
+							Debug.LogException(ex);
+						}
+					}
+				}
+				tableData.InnerData = obj_InnerData_0;
+				int count_InnerDataList_0 = sheet.Cells[index, innerIndex++].GetValue<int>();
+				tableData.InnerDataList = new ExampleInnerData[count_InnerDataList_0];
+				for (int index_InnerDataList_0 = 0; index_InnerDataList_0 < count_InnerDataList_0; ++index_InnerDataList_0)
+				{
+					tableData.InnerDataList[index_InnerDataList_0].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
+					int count_AutoList_1 = sheet.Cells[index, innerIndex++].GetValue<int>();
+					tableData.InnerDataList[index_InnerDataList_0].AutoList = new ExampleInnerInnerData[count_AutoList_1];
+					for (int index_AutoList_1 = 0; index_AutoList_1 < count_AutoList_1; ++index_AutoList_1)
+					{
+						tableData.InnerDataList[index_InnerDataList_0].AutoList[index_AutoList_1].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
+						try
+						{
+							tableData.InnerDataList[index_InnerDataList_0].AutoList[index_AutoList_1].EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), sheet.Cells[index, innerIndex++].GetValue<string>());
+						}
+						catch(System.Exception ex)
+						{
+							Debug.LogException(ex);
+						}
+					}
+				}
 			}
 			if (tableData.ID == defaultKey)
 			{
@@ -101,6 +140,27 @@ public class ExampleDataConvertor
 					foreach (var obj_AutoList_0 in tableData.AutoList)
 					{
 						writer.Write(obj_AutoList_0);
+					}
+					ExampleInnerData obj_InnerData_0 = tableData.InnerData;
+					{
+						writer.Write(obj_InnerData_0.ID);
+						writer.Write(obj_InnerData_0.AutoList.Length);
+						foreach (var obj_AutoList_1 in obj_InnerData_0.AutoList)
+						{
+							writer.Write(obj_AutoList_1.ID);
+							writer.Write((int)obj_AutoList_1.EnumValue);
+						}
+					}
+					writer.Write(tableData.InnerDataList.Length);
+					foreach (var obj_InnerDataList_0 in tableData.InnerDataList)
+					{
+						writer.Write(obj_InnerDataList_0.ID);
+						writer.Write(obj_InnerDataList_0.AutoList.Length);
+						foreach (var obj_AutoList_1 in obj_InnerDataList_0.AutoList)
+						{
+							writer.Write(obj_AutoList_1.ID);
+							writer.Write((int)obj_AutoList_1.EnumValue);
+						}
 					}
 				}
 			}

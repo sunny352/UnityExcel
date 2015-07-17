@@ -8,6 +8,18 @@ public enum TestEnum
 	enSecond,
 }
 
+public class ExampleInnerInnerData
+{
+	public int ID { get; set; }
+	public TestEnum EnumValue { get; set; }
+}
+
+public class ExampleInnerData
+{
+	public int ID { get; set; }
+	public ExampleInnerInnerData[] AutoList { get; set; }
+}
+
 [PreLoadAttributes]
 public class ExampleData
 {
@@ -19,4 +31,6 @@ public class ExampleData
 	[ArrayLengthAttributes(5)]
 	public int[] FixedList { get; set; }
 	public int[] AutoList { get; set; }
+	public ExampleInnerData InnerData { get; set; }
+	public ExampleInnerData[] InnerDataList { get; set; }
 }

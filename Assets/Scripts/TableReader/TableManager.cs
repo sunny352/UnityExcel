@@ -6,6 +6,5 @@ public class TableManager
 	public static void LoadTables()
 	{
 		ExampleDataReader.Load();
-
 	}
 }
