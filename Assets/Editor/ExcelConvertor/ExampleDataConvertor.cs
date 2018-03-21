@@ -40,11 +40,11 @@ public class ExampleDataConvertor
 			int innerIndex = 1;
 			{
 				tableData.ID = sheet.Cells[index, innerIndex++].GetValue<int>();
-				tableData.Name = sheet.Cells[index, innerIndex++].GetValue<string>();
+				tableData.Name = ExcelTools.GetCellString(sheet.Cells[index, innerIndex++]);
 				tableData.FloatValue = sheet.Cells[index, innerIndex++].GetValue<float>();
 				try
 				{
-					tableData.EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), sheet.Cells[index, innerIndex++].GetValue<string>());
+					tableData.EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), ExcelTools.GetCellString(sheet.Cells[index, innerIndex++]));
 				}
 				catch(System.Exception ex)
 				{
@@ -72,7 +72,7 @@ public class ExampleDataConvertor
 						obj_InnerData_4.AutoList[index_AutoList_5].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
 						try
 						{
-							obj_InnerData_4.AutoList[index_AutoList_5].EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), sheet.Cells[index, innerIndex++].GetValue<string>());
+							obj_InnerData_4.AutoList[index_AutoList_5].EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), ExcelTools.GetCellString(sheet.Cells[index, innerIndex++]));
 						}
 						catch(System.Exception ex)
 						{
@@ -93,7 +93,7 @@ public class ExampleDataConvertor
 						tableData.InnerDataList[index_InnerDataList_4].AutoList[index_AutoList_5].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
 						try
 						{
-							tableData.InnerDataList[index_InnerDataList_4].AutoList[index_AutoList_5].EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), sheet.Cells[index, innerIndex++].GetValue<string>());
+							tableData.InnerDataList[index_InnerDataList_4].AutoList[index_AutoList_5].EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), ExcelTools.GetCellString(sheet.Cells[index, innerIndex++]));
 						}
 						catch(System.Exception ex)
 						{
