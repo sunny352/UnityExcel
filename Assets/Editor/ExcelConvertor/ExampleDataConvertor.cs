@@ -50,54 +50,75 @@ public class ExampleDataConvertor
 				{
 					Debug.LogException(ex);
 				}
-				int count_FixedList_4 = 5;
+				int length_FixedList_4 = 5;
+				int count_FixedList_4 = sheet.Cells[index, innerIndex++].GetValue<int>();
 				tableData.FixedList = new int[count_FixedList_4];
-				for (int index_FixedList_4 = 0; index_FixedList_4 < count_FixedList_4; ++index_FixedList_4)
+				for (int index_FixedList_4 = 0; index_FixedList_4 < length_FixedList_4; ++index_FixedList_4)
 				{
+					if (index_FixedList_4 >= count_FixedList_4) break;
+
 					tableData.FixedList[index_FixedList_4] = sheet.Cells[index, innerIndex++].GetValue<int>();
 				}
+				int length_AutoList_4 = 5;
 				int count_AutoList_4 = sheet.Cells[index, innerIndex++].GetValue<int>();
 				tableData.AutoList = new int[count_AutoList_4];
-				for (int index_AutoList_4 = 0; index_AutoList_4 < count_AutoList_4; ++index_AutoList_4)
+				for (int index_AutoList_4 = 0; index_AutoList_4 < length_AutoList_4; ++index_AutoList_4)
 				{
+					if (index_AutoList_4 >= count_AutoList_4) break;
+
 					tableData.AutoList[index_AutoList_4] = sheet.Cells[index, innerIndex++].GetValue<int>();
 				}
 				ExampleInnerData obj_InnerData_4 = new ExampleInnerData();
 				{
 					obj_InnerData_4.ID = sheet.Cells[index, innerIndex++].GetValue<int>();
+					int length_AutoList_5 = 5;
 					int count_AutoList_5 = sheet.Cells[index, innerIndex++].GetValue<int>();
 					obj_InnerData_4.AutoList = new ExampleInnerInnerData[count_AutoList_5];
-					for (int index_AutoList_5 = 0; index_AutoList_5 < count_AutoList_5; ++index_AutoList_5)
+					for (int index_AutoList_5 = 0; index_AutoList_5 < length_AutoList_5; ++index_AutoList_5)
 					{
-						obj_InnerData_4.AutoList[index_AutoList_5].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
-						try
+						if (index_AutoList_5 >= count_AutoList_5) break;
+
 						{
-							obj_InnerData_4.AutoList[index_AutoList_5].EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), ExcelTools.GetCellString(sheet.Cells[index, innerIndex++]));
-						}
-						catch(System.Exception ex)
-						{
-							Debug.LogException(ex);
+							obj_InnerData_4.AutoList[index_AutoList_5].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
+							try
+							{
+								obj_InnerData_4.AutoList[index_AutoList_5].EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), ExcelTools.GetCellString(sheet.Cells[index, innerIndex++]));
+							}
+							catch(System.Exception ex)
+							{
+								Debug.LogException(ex);
+							}
 						}
 					}
 				}
 				tableData.InnerData = obj_InnerData_4;
+				int length_InnerDataList_4 = 5;
 				int count_InnerDataList_4 = sheet.Cells[index, innerIndex++].GetValue<int>();
 				tableData.InnerDataList = new ExampleInnerData[count_InnerDataList_4];
-				for (int index_InnerDataList_4 = 0; index_InnerDataList_4 < count_InnerDataList_4; ++index_InnerDataList_4)
+				for (int index_InnerDataList_4 = 0; index_InnerDataList_4 < length_InnerDataList_4; ++index_InnerDataList_4)
 				{
-					tableData.InnerDataList[index_InnerDataList_4].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
-					int count_AutoList_5 = sheet.Cells[index, innerIndex++].GetValue<int>();
-					tableData.InnerDataList[index_InnerDataList_4].AutoList = new ExampleInnerInnerData[count_AutoList_5];
-					for (int index_AutoList_5 = 0; index_AutoList_5 < count_AutoList_5; ++index_AutoList_5)
+					if (index_InnerDataList_4 >= count_InnerDataList_4) break;
+
 					{
-						tableData.InnerDataList[index_InnerDataList_4].AutoList[index_AutoList_5].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
-						try
+						tableData.InnerDataList[index_InnerDataList_4].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
+						int length_AutoList_6 = 5;
+						int count_AutoList_6 = sheet.Cells[index, innerIndex++].GetValue<int>();
+						tableData.InnerDataList[index_InnerDataList_4].AutoList = new ExampleInnerInnerData[count_AutoList_6];
+						for (int index_AutoList_6 = 0; index_AutoList_6 < length_AutoList_6; ++index_AutoList_6)
 						{
-							tableData.InnerDataList[index_InnerDataList_4].AutoList[index_AutoList_5].EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), ExcelTools.GetCellString(sheet.Cells[index, innerIndex++]));
-						}
-						catch(System.Exception ex)
-						{
-							Debug.LogException(ex);
+							if (index_AutoList_6 >= count_AutoList_6) break;
+
+							{
+								tableData.InnerDataList[index_InnerDataList_4].AutoList[index_AutoList_6].ID = sheet.Cells[index, innerIndex++].GetValue<int>();
+								try
+								{
+									tableData.InnerDataList[index_InnerDataList_4].AutoList[index_AutoList_6].EnumValue = (TestEnum)Enum.Parse(typeof(TestEnum), ExcelTools.GetCellString(sheet.Cells[index, innerIndex++]));
+								}
+								catch(System.Exception ex)
+								{
+									Debug.LogException(ex);
+								}
+							}
 						}
 					}
 				}

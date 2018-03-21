@@ -280,6 +280,7 @@ public class ExcelTools
 			}
 			else if (propInfo.PropertyType.IsArray)
 			{
+				string maxLength = string.Format("length_{0}_{1}", propInfo.Name, preTab.Length);
 				string countName = string.Format("count_{0}_{1}", propInfo.Name, preTab.Length);
 				string indexName = string.Format("index_{0}_{1}", propInfo.Name, preTab.Length);
 				string newDataName = string.Format("{0}.{1}[{2}]", dataName, propInfo.Name, indexName);
@@ -290,14 +291,11 @@ public class ExcelTools
 					foreach (object attr in arrayLengthAttr)
 					{
 						ArrayLengthAttributes realAttr = attr as ArrayLengthAttributes;
-						csStr += string.Format("{0}int {1} = {2};\n", preTab, countName, realAttr.Length);
+						csStr += string.Format("{0}int {1} = {2};\n", preTab, maxLength, realAttr.Length);
 						break;
 					}
 				}
-				else
-				{
-					csStr += string.Format("{0}int {1} = sheet.Cells[index, innerIndex++].GetValue<int>();\n", preTab, countName);
-				}
+				csStr += string.Format("{0}int {1} = sheet.Cells[index, innerIndex++].GetValue<int>();\n", preTab, countName);
 
 				string subTypeName = propInfo.PropertyType.ToString();
 				subTypeName = subTypeName.Substring(0, subTypeName.Length - 2);
@@ -305,7 +303,9 @@ public class ExcelTools
 				if (null != subType)
 				{
 					csStr += string.Format("{0}{1}.{2} = new {3}[{4}];\n", preTab, dataName, propInfo.Name, GetTypeName(subType), countName);
-					csStr += string.Format("{0}for (int {1} = 0; {1} < {2}; ++{1})\n", preTab, indexName, countName);
+					csStr += string.Format("{0}for (int {1} = 0; {1} < {2}; ++{1})\n", preTab, indexName, maxLength);
+					csStr += Push(ref preTab);
+					csStr += string.Format("{0}if ({1} >= {2}) break;\n\n", preTab, indexName, countName);
 					if (subType.IsEnum)
 					{
 						csStr += string.Format("{0}try\n", preTab);
@@ -316,20 +316,17 @@ public class ExcelTools
 					}
 					else if (subType.IsPrimitive)
 					{
-						csStr += Push(ref preTab);
 						csStr += string.Format("{0}{1} = sheet.Cells[index, innerIndex++].GetValue<{2}>();\n", preTab, newDataName, GetTypeName(subType));
-						csStr += Pop(ref preTab);
 					}
 					else if (subType == typeof(string))
 					{
-						csStr += Push(ref preTab);
 						csStr += string.Format("{0}{1} = ExcelTools.GetCellString(sheet.Cells[index, innerIndex++]);\n", preTab, newDataName);
-						csStr += Pop(ref preTab);
 					}
 					else
 					{
 						csStr += CreateObjrectReadExcel(GetTypeByName(subTypeName), preTab, newDataName);
 					}
+					csStr += Pop(ref preTab);
 				}
 			}
 			else

@@ -17,8 +17,10 @@ public class ExampleInnerInnerData
 public class ExampleInnerData
 {
 	public int ID { get; set; }
+	[ArrayLengthAttributes(5)]
 	public ExampleInnerInnerData[] AutoList { get; set; }
 }
+
 
 [PreLoadAttributes]
 public class ExampleData
@@ -30,7 +32,9 @@ public class ExampleData
 	public TestEnum EnumValue { get; set; }
 	[ArrayLengthAttributes(5)]
 	public int[] FixedList { get; set; }
+	[ArrayLengthAttributes(5)]
 	public int[] AutoList { get; set; }
 	public ExampleInnerData InnerData { get; set; }
+	[ArrayLengthAttributes(5)]
 	public ExampleInnerData[] InnerDataList { get; set; }
 }
