@@ -4,14 +4,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using OfficeOpenXml.FormulaParsing;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 using UnityEditor;
 using UnityEngine;
 
 public class ExcelTools
 {
-	private static Type[] m_tableTypes = new Type[] 
-	{ 
-		typeof(ExampleData),
+	private static Type[] m_tableTypes = { 
+		typeof(ExampleData)
 	};
 
 	private static readonly string TableReaderFolder = "Assets/Scripts/TableReader";
@@ -248,6 +249,12 @@ public class ExcelTools
 		csStr = csStr.Replace("{WriteBytes}", CreateObjrectWriteBytes(type, "\t\t\t\t", "tableData"));
 		return csStr;
 	}
+
+	public static string GetCellString(ExcelRangeBase cell)
+	{
+		var value = cell.GetValue<string>();
+		return string.IsNullOrEmpty(value) ? string.Empty : value;
+	}
 	public static string CreateObjrectReadExcel(Type type, string preTab, string dataName)
 	{
 		string csStr = Push(ref preTab);
@@ -259,7 +266,7 @@ public class ExcelTools
 			{
 				csStr += string.Format("{0}try\n", preTab);
 				csStr += Push(ref preTab);
-				csStr += string.Format("{0}{1}.{2} = ({3})Enum.Parse(typeof({3}), sheet.Cells[index, innerIndex++].GetValue<string>());\n", preTab, dataName, propInfo.Name, propInfo.PropertyType.ToString());
+				csStr += string.Format("{0}{1}.{2} = ({3})Enum.Parse(typeof({3}), ExcelTools.GetCellString(sheet.Cells[index, innerIndex++]));\n", preTab, dataName, propInfo.Name, propInfo.PropertyType.ToString());
 				csStr += Pop(ref preTab);
 				csStr += string.Format("{0}catch(System.Exception ex)\n{0}{{\n{0}\tDebug.LogException(ex);\n{0}}}\n", preTab);
 			}
@@ -269,7 +276,7 @@ public class ExcelTools
 			}
 			else if (propInfo.PropertyType == typeof(string))
 			{
-				csStr += string.Format("{0}{1}.{2} = sheet.Cells[index, innerIndex++].GetValue<string>();\n", preTab, dataName, propInfo.Name);
+				csStr += string.Format("{0}{1}.{2} = ExcelTools.GetCellString(sheet.Cells[index, innerIndex++]);\n", preTab, dataName, propInfo.Name);
 			}
 			else if (propInfo.PropertyType.IsArray)
 			{
@@ -303,7 +310,7 @@ public class ExcelTools
 					{
 						csStr += string.Format("{0}try\n", preTab);
 						csStr += Push(ref preTab);
-						csStr += string.Format("{0}{1} = ({2})Enum.Parse(typeof({2}), sheet.Cells[index, innerIndex++].GetValue<string>());\n", preTab, newDataName, GetTypeName(subType));
+						csStr += string.Format("{0}{1} = ({2})Enum.Parse(typeof({2}), ExcelTools.GetCellString(sheet.Cells[index, innerIndex++]));\n", preTab, newDataName, GetTypeName(subType));
 						csStr += Pop(ref preTab);
 						csStr += string.Format("{0}catch(System.Exception ex)\n{0}{{\n{0}\tDebug.LogException(ex);\n{0}}}\n", preTab);
 					}
@@ -316,7 +323,7 @@ public class ExcelTools
 					else if (subType == typeof(string))
 					{
 						csStr += Push(ref preTab);
-						csStr += string.Format("{0}{1} = sheet.Cells[index, innerIndex++].GetValue<string>();\n", preTab, newDataName);
+						csStr += string.Format("{0}{1} = ExcelTools.GetCellString(sheet.Cells[index, innerIndex++]);\n", preTab, newDataName);
 						csStr += Pop(ref preTab);
 					}
 					else

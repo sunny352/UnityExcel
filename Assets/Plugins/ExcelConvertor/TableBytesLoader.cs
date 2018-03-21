@@ -21,10 +21,7 @@ public class TableBytesLoader
 		}
 		else
 		{
-			byte[] tableBytes = new byte[tableAssets.bytes.Length];
-			Array.Copy(tableBytes, tableAssets.bytes, tableAssets.bytes.Length);
-			Resources.UnloadAsset(tableAssets);
-			return tableBytes;
+			return tableAssets.bytes;
 		}
 	}
 }
